@@ -46,6 +46,10 @@ void LoadBalancer::balanceLoad() {
     std::cout << "Range for Task Times: 1-" << minServers << std::endl;
 }
 
+const WebServer& LoadBalancer::getServer(int index) const {
+    return servers.at(index); // Use at() for bounds checking
+}
+
 
 size_t LoadBalancer::getRequestQueueLength() const {
     return requestQueue.size();

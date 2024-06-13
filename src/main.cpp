@@ -1,8 +1,9 @@
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include "../include/LoadBalancer.h"
 #include <fstream>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+#include "../include/LoadBalancer.h"
 
 std::string generateRandomIP() {
     return std::to_string(rand() % 256) + "." + std::to_string(rand() % 256) + "." + std::to_string(rand() % 256) + "." + std::to_string(rand() % 256);
@@ -13,6 +14,14 @@ Request generateRandomRequest() {
     std::string ipOut = generateRandomIP();
     int time = rand() % 100; // Random time between 0 and 99
     return Request(ipIn, ipOut, time);
+}
+
+std::string getCurrentTime() {
+    std::time_t now = std::time(nullptr);
+    std::tm* localTime = std::localtime(&now);
+    std::ostringstream oss;
+    oss << std::put_time(localTime, "%m%d%H%M%S");
+    return oss.str();
 }
 
 int main() {
@@ -31,8 +40,9 @@ int main() {
         loadBalancer.addRequest(generateRandomRequest());
     }
 
-    // Open log file for writing
-    std::ofstream logfile("logs/simulation.log");
+    // Generate unique log file name using current time
+    std::string logFileName = "simulation_" + getCurrentTime() + ".log";
+    std::ofstream logfile("logs/" + logFileName);
     if (!logfile.is_open()) {
         std::cerr << "Error: Could not open log file for writing." << std::endl;
         return 1;
@@ -41,6 +51,10 @@ int main() {
     // Redirect stdout to log file
     std::streambuf *coutbuf = std::cout.rdbuf(); // Save old cout buffer
     std::cout.rdbuf(logfile.rdbuf()); // Redirect cout to log file
+
+    // Log initial queue size and range for task times
+    std::cout << "Initial Queue Size: " << loadBalancer.getRequestQueueLength() << std::endl;
+    std::cout << "Range for Task Times: 0-99" << std::endl;
 
     // Run the simulation
     for (int time = 0; time < simulationTime; ++time) {
@@ -71,6 +85,6 @@ int main() {
     logfile.close();
     std::cout.rdbuf(coutbuf); // Restore old cout buffer
 
-    std::cout << "Simulation complete. Log file saved as simulation.log" << std::endl;
+    std::cout << "Simulation complete. Log file saved as " << logFileName << std::endl;
     return 0;
 }
